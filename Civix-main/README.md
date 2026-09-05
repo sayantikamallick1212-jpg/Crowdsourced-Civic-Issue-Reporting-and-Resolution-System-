@@ -1,378 +1,96 @@
-# 🚧 Civix – Local Civic Issue Reporting App  
+# Civix AI-Powered Civic Issue Reporting and Resolution System
 
-**Domain**: Governance / Public Welfare  
-**Tagline**: Empowering citizens, enabling better governance.  
+Civix lets citizens file civic complaints with a photo and location. A separate local Python service classifies the submitted image; Express stores the resulting prediction with the complaint in MongoDB for an administrator to verify or correct.
 
-![Issues](https://img.shields.io/github/issues/Harshs16/civix)
-![Forks](https://img.shields.io/github/forks/Harshs16/civix)
-![Stars](https://img.shields.io/github/stars/Harshs16/civix)
+## Implemented features
 
-## 🧠 Overview
-  
-**Civix** is a full-stack web application designed to streamline the process of reporting, tracking, and resolving local civic issues such as potholes, broken streetlights, and uncollected garbage. It provides a bridge between citizens and municipal authorities, bringing accountability and transparency to local issue resolution. 
+- Vanilla HTML, CSS, and JavaScript frontend—no React runtime or React dependencies.
+- Image preview, browser geolocation capture, upload progress messaging, and model-returned ranked confidence display.
+- Express/MongoDB complaint workflow with JPEG/PNG/WebP validation, 10 MB limit, randomized upload names, server-side ML timeout handling, and CSRF protection.
+- FastAPI ML API that loads a persisted, trained scikit-learn model.
+- Admin JWT-protected AI review endpoint; a verified category may be retained or corrected.
+- Existing issue status, MongoDB persistence, optional Cloudinary storage, JWT authorization, and email-status capabilities remain in the backend.
 
-![Image](https://github.com/user-attachments/assets/a5c04052-c62e-4885-ad14-9084a63272f2)
-*Caption: Citizen view showing issue reporting interface*
+## Architecture
 
-## 🚨 Problem Addressed  
-Local civic issues often go unnoticed or unresolved due to:  
-- Lack of structured, user-friendly reporting systems  
-- No transparent status tracking  
-- Difficulty in community prioritization  
-
-## ✨ Features  
-
-![Image](https://github.com/user-attachments/assets/b7f86a3e-3f51-4098-a5e7-eb14b134b111)
-*Caption: Step-by-step issue reporting process*
-
-### 🧍 Citizens  
-- 📍 **Report Issues**: Submit problems with description, live location (via map), and image  
-- 🔁 **Track Status**: View transitions from *Open → In Progress → Resolved*  
-- 👍 **Upvote Issues**: Support others' reports to highlight common concerns  
-
-### 🧑‍💼 Admins (City Workers)  
-- 📊 **Dashboard**: View, filter, and manage all reported issues  
-- 🔧 **Status Management**: Update progress and mark resolutions  
-- 🔒 **Role-Based Access**: Secure login for Citizens and Admins  
-
-### 📘 Civic Education & Rights  
-
-Civix now includes a fully frontend civic learning module to educate users—especially students and first-time voters—about their rights and responsibilities.
-
-**Route**: `/civic-education`  
-**File**: `src/Pages/CivicEducation.jsx`
-
-#### ✨ Highlights  
-- 🧠 Interactive Quiz System with progress tracking and localStorage-based scores  
-- 🏆 Gamified XP system, achievements, and level-ups  
-- 🗂️ Tabbed layout for Overview, Learn, Quiz, and Resources  
-- 🔖 Bookmark favorite sections and save them locally  
-- 📊 Reading Progress Bar and Civic Journey visualization  
-- 💡 Animated “Did You Know?” facts carousel  
-- 📥 Downloadable PDFs and curated civic resources  
-- 🎉 Celebration animations on milestone completions  
-
-### 🧭 Civic Simulator
-
-Civix now includes a standalone interactive simulator that allows users to step into civic leadership roles. Through animated dilemmas and slider-based decisions, users make trade-offs and explore the consequences of their choices—all within a frontend-only experience.
-
-**Route**: `/civic-simulator`  
-**File**: `src/Pages/CivicSimulator.jsx`
-
-#### ✨ Highlights  
-- 🎮 **Scenario Cards** – Solve dilemmas like budget allocation or policy conflicts using sliders and toggles  
-- 🧠 **Outcome Feedback** – Dynamic responses based on user choices (public satisfaction, resource balance)  
-- 📊 **Civic Style Profiling** – Discover civic personas like “Planner” or “Advocate” based on decisions  
-- 🔁 **Replayable Challenges** – Rerun scenarios to improve your score and try alternate outcomes  
-- 🏅 **XP & Badges** – Earn experience points and unlock achievement badges locally  
-- 💡 **Frontend-Only Logic** – Built entirely in React with `localStorage` persistence for decision history and XP tracking
-
-##📂 Project Structure
-
-```
-Civix/
-├── .github/              # GitHub Actions workflows and issue/PR templates
-├── backend/              # The entire Node.js/Express.js backend API
-│   ├── config/           # Database (MongoDB), Swagger, and other configs
-│   ├── controllers/      # Business logic for API routes (e.g., auth, issues)
-│   ├── middlewares/      # Custom middleware (e.g., auth, error handling, file uploads)
-│   ├── models/           # Mongoose schemas for the database (e.g., User, Issue)
-│   ├── routes/           # API endpoint definitions (e.g., auth.js, profileRoutes.js)
-│   ├── __tests__/        # Backend tests (Jest)
-│   ├── utils/            # Utility functions (e.g., email, token, file upload)
-│   ├── .env.example      # Environment variable template for the backend
-│   └── server.js         # Main backend server entry point
-│
-├── cypress/              # End-to-end (E2E) tests
-│
-├── public/               # Static assets for the frontend
-│   ├── gtfs/             # Static data files (CSV, JSON) for app features
-│   ├── index.html        # The main HTML template for the React app
-│   └── *.png, *.svg      # Public images, logos, and favicons
-│
-├── src/                  # The main React frontend application source code
-│   ├── Pages/            # All top-level page components (e.g., Home, About, ReportIssue)
-│   ├── components/       # Reusable UI components (e.g., Navbar, Footer, Chatbot)
-│   ├── assets/           # Images and logos imported into React components
-│   ├── hooks/            # Custom React hooks (e.g., useProfileStatus)
-│   ├── utils/            # Frontend utility functions
-│   ├── App.jsx           # Main React app component (routing)
-│   └── index.jsx         # React app entry point
-│
-├── .gitignore            # Files and folders to be ignored by Git
-├── LICENSE               # Project's open-source license
-├── README.md             # This file
-├── package.json          # Frontend dependencies and scripts (React)
-└── tailwind.config.js    # Tailwind CSS configuration
+```text
+Vanilla browser → Express (/api/issues) → FastAPI (/predict) → saved ML model
+        ← prediction + confidence ←                    ↓
+                         MongoDB ← stored issue + AI metadata
+                                      ↓
+                              admin verification UI
 ```
 
-## 🛠️ Tech Stack  
-### Frontend  
-- React.js  
-- Tailwind CSS – Modern responsive UI  
-- Leaflet.js – Interactive maps for location tagging  
-
-### Backend  
-- Node.js + Express.js  
-- PostgreSQL – Relational DB for reports and user data  
-- JWT Authentication – Secure role-based access
-- Multer – File upload handling
-- Swagger – API documentation
-- Helmet.js – Security middleware
-- Express Rate Limit – API protection
-
-### Integrations  
-- Cloudinary – Image uploads and hosting  
-- JWT Authentication – Secure role-based access
-
-## 🔧 Backend API Features
-
-### 🔐 Authentication System
-- **JWT-based authentication** with role management
-- **Admin/User role separation** for different access levels
-- **Secure password hashing** using bcrypt
-- **Token expiration** and refresh handling
-
-### 📡 RESTful API Endpoints
-- **GET /api/issues** - Retrieve all civic issues
-- **POST /api/issues** - Create new issue with file upload
-- **PATCH /api/issues/:id/status** - Update issue status (Admin only)
-- **POST /api/auth/signup** - User registration
-- **POST /api/auth/login** - User authentication
-
-### 🛡️ Security Features
-- **Rate limiting** (100 requests per 15 minutes)
-- **Input validation** using express-validator
-- **XSS protection** and security headers
-- **CORS configuration** for frontend integration
-- **File upload security** with type validation
-
-### 📊 API Documentation
-- **Interactive Swagger UI** at `/api-docs`
-- **Complete endpoint documentation** with examples
-- **Schema definitions** for request/response objects
-- **Authentication testing** directly in browser
-
-### 🗄️ Database Integration
-- **PostgreSQL** for reliable data storage
-- **Optimized queries** with proper indexing
-- **User management** with secure credential storage
-- **Issue tracking** with status management
-
-### 📁 File Management
-- **Image upload** support for issue reporting
-- **File validation** and security checks
-- **Organized storage** in uploads directory
-- **Efficient file handling** with Multer middleware  
-
-
-## 🌗 Dark Mode Toggle  
-**Implementation**:  
-- `darkMode: 'class'` in `tailwind.config.js`  
-- User preference saved via `localStorage`  
-- Toggle switch: `src/ThemeToggle.jsx` (used in `Home.jsx`)  
-
-**How to Use**:  
-1. Locate the toggle button (🌙/☀️) in the header  
-2. Click to switch between:  
-   - **Light Mode**: White/light gray backgrounds (`bg-slate-50`) with dark text (`text-gray-900`)  
-   - **Dark Mode**: Dark gray backgrounds (`dark:bg-gray-800`) with light text (`dark:text-gray-100`)  
-
-## 🚀 Getting Started  
-
-![Image](https://github.com/user-attachments/assets/2cd2d4e6-f9b4-4322-aad2-5475277ce2ff)
-*Caption: Admin dashboard with issue management tools*
-
-### Prerequisites  
-- Node.js 16+  
-- npm 8+  
-- PostgreSQL 14+  
-- Cloudinary account (for image uploads)
-
-## 📡 API Usage Examples
-
-### Authentication
-```bash
-# Register new user
-curl -X POST http://localhost:5000/api/auth/signup \
-  -H "Content-Type: application/json" \
-  -d '{"username":"john_doe","email":"john@example.com","password":"password123"}'
-
-# Login user
-curl -X POST http://localhost:5000/api/auth/login \
-  -H "Content-Type: application/json" \
-  -d '{"email":"john@example.com","password":"password123"}'
-```
+## Technology stack
 
-### Issue Management
-```bash
-# Get all issues
-curl -X GET http://localhost:5000/api/issues
-```
-# Create new issue with image
-curl -X POST http://localhost:5000/api/issues \
-  -H "Authorization: Bearer YOUR_JWT_TOKEN" \
-  -F "title=Pothole on Main Street" \
-  -F "description=Large pothole causing traffic issues" \
-  -F "location=Main Street & 5th Ave" \
-  -F "category=road" \
-  -F "file=@/path/to/image.jpg"
+HTML, CSS, vanilla JavaScript, Node.js, Express, MongoDB/Mongoose, Python, FastAPI, Pillow, NumPy, and scikit-learn.
 
-# Update issue status (Admin only)
-curl -X PATCH http://localhost:5000/api/issues/1/status \
-  -H "Authorization: Bearer ADMIN_JWT_TOKEN" \
-  -H "Content-Type: application/json" \
-  -d '{"status":"in-progress"}'
+## ML model and dataset
 
+The model is a trainable `RandomForestClassifier` over 64×64 RGB pixels, colour histograms, and grayscale-gradient features. It supports: `pothole`, `garbage`, `waterlogging`, `damaged_road`, `broken_streetlight`, and `other`.
 
-### API Documentation
-- **Swagger UI**: `http://localhost:5000/api-docs`
-- **Interactive testing** of all endpoints
-- **Complete schema documentation**
-- **Authentication examples**  
+Add real licensed images to `ml-service/dataset/<class>/` then run `python train.py --dataset dataset` from `ml-service`. Training saves `model/civic_issue_classifier.joblib` and measures a stratified test split. Its actual accuracy, precision, recall, F1, class counts, and test count are written to `model/evaluation_metrics.json`; no metrics are claimed before you train with your dataset.
 
+See [the ML service guide](ml-service/README.md) for the precise dataset layout and commands.
 
+## Local setup
 
+1. Install Node dependencies:
 
-### Testing
-*   **Backend Testing:** Jest, Supertest, MongoDB Memory Server
-*   **Frontend Unit/Component Testing:** Vitest, React Testing Library
-*   **Frontend E2E Testing:** Cypress
+   ```powershell
+   cd backend
+   npm install
+   ```
 
----
+2. Install and train the Python service:
 
+   ```powershell
+   cd ..\ml-service
+   py -m venv .venv
+   .\.venv\Scripts\Activate.ps1
+   pip install -r requirements.txt
+   # Copy real labelled images into dataset/<class>/ first.
+   python train.py --dataset dataset
+   ```
 
-## ✅ Running Tests
+3. Copy `backend/.env.example` to `backend/.env`, set a real `JWT_SECRET`, and start MongoDB.
 
-We have a comprehensive testing suite to ensure code quality and stability.
+4. In one terminal, start the ML service:
 
-### Backend Tests (Jest & Supertest)
+   ```powershell
+   cd ml-service
+   .\.venv\Scripts\Activate.ps1
+   uvicorn app:app --host 127.0.0.1 --port 8000
+   ```
 
-These tests cover the API endpoints. They run against an in-memory MongoDB database to ensure a clean, isolated environment for each test run, preventing any impact on your development database.
+5. In another terminal, start Express:
 
-To run all backend tests, navigate to the `/backend` directory and run:
-```sh
-npm test
-```
+   ```powershell
+   cd backend
+   npm start
+   ```
 
-### Frontend Unit & Component Tests (Vitest)
+6. Open `http://localhost:5000`. Submit an image to see the predicted category, confidence, and the leading alternatives. Load the dashboard and provide an admin JWT to verify/correct a prediction.
 
-These tests verify that individual React components render and behave correctly in isolation. We use Vitest and React Testing Library for this.
+## Important API endpoints
 
-To run all frontend unit tests, navigate to the `/frontend` directory and run:
-```sh
-npm test
-```
+| Service | Endpoint | Purpose |
+| --- | --- | --- |
+| Express | `GET /api/csrf-token` | CSRF token for state-changing browser requests |
+| Express | `POST /api/issues` | Upload image, call Python service, create complaint |
+| Express | `GET /api/issues` | List complaints |
+| Express | `PATCH /api/issues/:id/status` | Admin status update |
+| Express | `PATCH /api/issues/:id/ai-review` | Admin verifies/corrects AI category |
+| FastAPI | `GET /health` | Service and persisted-model availability |
+| FastAPI | `POST /predict` | Multipart image prediction API with ranked category probabilities |
 
-### Frontend End-to-End (E2E) Tests (Cypress)
+## Manual test checklist
 
-E2E tests simulate real user workflows in a browser from start to finish. This helps catch bugs in critical user journeys like logging in, creating a post, or navigating the application.
-
-To open the Cypress Test Runner, navigate to the `/frontend` directory and run:
-```sh
-npm run cypress:open
-```
-### 📥 Installation  
-📦 1.**Clone the repository**:  
-   ```bash
-   git clone https://github.com/Harshs16/civix.git
-   cd Civix
-```
-  
-📦 2. **Install Dependencies**
-
-Make sure you have **Node.js** and **npm** installed.  
-Then, install the project dependencies:
-
-```bash
-
-npm install
-
-```
-
-
-
-### 🌱 3. **Create a New Branch**
-Use a meaningful branch name:
-```bash
-
-git checkout -b your-feature-name
-
-```
-
-Example:
-```bash
-
-git checkout -b improve-readme
-
-```
-
-
- 🛠️ 4. **Make Your Changes**
-- Improve the code, fix bugs, or update docs.
-- If you're running the project:
-  ```bash
-
-  npm start
-
-  ```
-
-
-
- ✅ 5. **Stage and Commit**
-```bash
-
-git add .
-git commit -m "feat: your clear and concise commit message"
-
-```
-
-🚀 6. **Push Your Branch**
-```bash
-
-git push origin your-feature-name
-
-```
-
----
-
-🔁 7. **Create a Pull Request**
-- Go to your forked repo on GitHub
-- Click **“Compare & pull request”**
-- Add a helpful description of what you changed and why
-
----
-
-
-
-## 📌 Roadmap / Future Enhancements  
-
-- 🔔 Push notifications for issue updates  
-- 📈 Analytics for civic issue trends  
-- 🌐 Multilingual support  
-- 📱 Mobile app (React Native) 
-
---- 
-
-## 🤝 Contributing
-Pull requests are welcome! For major changes, please open an issue first to discuss your ideas.
-
---- 
-
-## 🌟 Our Awesome Contributors
-
-<a href="https://github.com/Harshs16/civix/graphs/contributors">
-  <img src="https://contrib.rocks/image?repo=Harshs16/civix" />
-</a>
-
---- 
-
-## 📄 License
-MIT License. See LICENSE file for more details.
-
-<p align="center">
-  <a href="#top" style="font-size: 18px; padding: 8px 16px; display: inline-block; border: 1px solid #ccc; border-radius: 6px; text-decoration: none;">
-    ⬆️ Back to Top
-  </a>
-</p>
-
+1. Submit a valid labelled-style civic image and confirm the stored category, confidence, and alternatives in the dashboard.
+2. Try a non-image, missing image, and an image above 10 MB; each must return a validation error.
+3. Stop FastAPI and submit; Express should return a meaningful service-unavailable/timeout error without creating a complaint.
+4. Stop MongoDB and submit; Express should return an error rather than crash.
+5. Test a low-confidence result and ensure the displayed percentage is the returned model probability.
+6. With an admin JWT, verify and then correct a category; confirm `aiValidated` and `aiValidatedCategory` update.
+7. Permit geolocation, then confirm latitude/longitude and location text persist.
+8. Update complaint status with an administrator token and confirm optional email notifications still behave as configured.

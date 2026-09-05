@@ -3,7 +3,8 @@ const os = require("os");
 const process = require("process");
 
 const numCPUs = os.cpus().length;
-if (cluster.isPrimary) {
+const useCluster = process.env.CLUSTER_MODE === "true";
+if (useCluster && cluster.isPrimary) {
   console.log(`======================================`);
   console.log(`Civix Backend Primary Process Started`);
   console.log(`Primary PID:${process.pid}`);
@@ -90,6 +91,7 @@ if (cluster.isPrimary) {
   app.use(skipCSRFForRoutes(csrfSkipRoutes));
 
   app.use("/uploads", express.static(path.join(__dirname, "uploads")));
+  app.use(express.static(path.join(__dirname, "..", "frontend")));
 
   // === Rate Limiting ===
   const limiter = rateLimit({
@@ -125,6 +127,8 @@ if (cluster.isPrimary) {
   // Global Error Handler
   const errorHandler = require("./middlewares/errorHandler.js");
   app.use(errorHandler);
+
+  app.use((req, res) => res.sendFile(path.join(__dirname, "..", "frontend", "index.html")));
 
   // === Start Server ===
   const PORT = process.env.PORT || 5000;

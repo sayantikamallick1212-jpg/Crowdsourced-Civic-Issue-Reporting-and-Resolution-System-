@@ -19,6 +19,17 @@
 .env.test.local
 .env.production.local
 
+# Python ML data and trained artifacts (models are generated locally)
+ml-service/.venv/
+ml-service/dataset/*
+!ml-service/dataset/.gitkeep
+ml-service/model/*.joblib
+ml-service/model/evaluation_metrics.json
+
+# Local issue uploads
+backend/uploads/*
+!backend/uploads/.gitkeep
+
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*

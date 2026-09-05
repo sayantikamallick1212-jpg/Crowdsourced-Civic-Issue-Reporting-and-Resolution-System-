@@ -1,6 +1,5 @@
 const fs = require("fs");
 const path = require("path");
-const axios = require("axios");
 const { asyncHandler } = require("../utils/asyncHandler");
 
 const CONTRIBUTORS_FILE = path.join(__dirname, "../cache/contributors.json");
@@ -23,15 +22,15 @@ const getContributors = asyncHandler(async (req, res) => {
         const cachedData = fs.readFileSync(CONTRIBUTORS_FILE, "utf-8");
         return res.json(JSON.parse(cachedData));
     } else {
-        const response = await axios.get(GITHUB_API_URL, {
+        const response = await fetch(GITHUB_API_URL, {
             headers: {
                 "User-Agent": "Civix-App",
                 "Accept": "application/vnd.github+json",
                 // Authorization: `token ${process.env.GITHUB_TOKEN}` // Uncomment if needed
             },
         });
-
-        const contributors = response.data;
+        if (!response.ok) throw new Error(`GitHub contributors request failed (${response.status})`);
+        const contributors = await response.json();
         fs.writeFileSync(CONTRIBUTORS_FILE, JSON.stringify(contributors, null, 2));
 
         return res.json(contributors);

@@ -9,11 +9,12 @@ router.post("/", upload.single("file"), issueController.createIssue);
 
 
 router.patch("/:id/status", verifyToken, isAdmin, issueController.updateIssueStatus);
+router.patch("/:id/ai-review", verifyToken, isAdmin, issueController.reviewAiPrediction);
 
 // GET: All issues
 router.get("/", issueController.getAllIssues);
 router.get("/:id",issueController.getIssueById)
-router.delete("/issues/:id",verifyToken,isAdmin,issueController. deleteIssue);
-router.patch("/issues/:id",verifyToken,issueController.updateIssue)
+router.delete("/:id",verifyToken,isAdmin,issueController.deleteIssue);
+router.patch("/:id",verifyToken,issueController.updateIssue);
 
 module.exports = router;
